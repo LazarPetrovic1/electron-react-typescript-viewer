@@ -1,5 +1,20 @@
-body {
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+a { color: white !important; }
+
+table td {
+  background-color: #282c34 !important;
+  color: white !important;
+}
+
+body {
+  color: white;
+  overflow-y: hidden;
+  background-color: #282c34;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -7,7 +22,115 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.wrapper { overflow-y: hidden; height: calc(100vh - 67px); }
+::selection { background-color: yellow; color: black; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgb(102, 124, 236); }
+::-webkit-scrollbar-thumb { background: rgb(10, 2, 154); }
+
+.mimetype {
+  bottom: 1px;
+  right: 1px; /* for the border-right */
+  background: transparent;
+  font-size: 0.75rem;
+  border: none;
+}
+
+.canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  filter: blur(5px) contrast(200%) hue-rotate(45deg) invert(25%) saturate(100%) sepia(10%);
+}
+
+.music-controls {
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.controlholder { background-color: #111; }
+.playing { background-color: #4b5363 !important; }
+tr.clickable { cursor: pointer; }
+
+.music-controls-actual {
+  z-index: 20;
+  display: flex;
+  background-color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+}
+
+.audio-tag { z-index: -10; }
+.flow-play { padding: 0.25rem 0.5rem; }
+.flow-switch { padding: 0.25rem 0.5rem; }
+.flow-volume { padding: 0.2rem; }
+
+.flow-duration {
+  padding: 0.25rem 1rem;
+  min-width: 400px;
+  display: flex;
+  align-items: center;
+}
+
+.flow-duration > span {
+  display: inline-block;
+  margin: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+
+.flow-play > span,
+.flow-switch > span,
+.flow-volume > span {
+  display: inline-block;
+  margin: 0.25rem;
+  cursor: pointer;
+}
+
+.rangeholder { flex-grow: 1; height: 100%; display: flex; align-items: center; }
+
+.flow-start-duration {
+  color: black;
+  bottom: -0.75rem;
+  left: 0;
+}
+
+.flow-end-duration {
+  color: black;
+  bottom: -0.75rem;
+  right: 0;
+}
+
+.flow-volume { display: flex; align-items: center; min-width: 100px; }
+
+.volume-bar {
+  right: -2.3rem;
+  top: -1rem;
+  width: 60px;
+}
+
+input[type=range].progress-bar::-webkit-slider-thumb {
+  background: #111;
+  border: 1px solid #000000;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d; /* Add cool effects to your sliders! */
+}
+
+.texthandler {
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 38px;
+  line-height: 100%;
+  display: table-cell;
+  vertical-align: bottom;
+  font-size: 3rem;
+}
+
+#display-image {
+  width: auto;
+  height: auto;
+  max-height: calc(100% - 67px);
 }

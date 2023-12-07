@@ -1,25 +1,22 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Files, Main } from "./pages";
+import { Nav } from "./components";
+type Wrappers = { children?: React.ReactNode }
+const Wrapper = (props: Wrappers) => (
+  <div className="wrapper container-fluid px-1">{props.children}</div>
+)
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Nav />
+      <Wrapper>
+        <Routes>
+          <Route path="/" element={<Main />}></Route>
+          <Route path="/files" element={<Files />}></Route>
+        </Routes>
+      </Wrapper>
+    </BrowserRouter>    
   );
 }
 
