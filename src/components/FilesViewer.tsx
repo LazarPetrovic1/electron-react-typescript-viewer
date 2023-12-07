@@ -13,10 +13,11 @@ type FVProps = {
   setIsPlaying: Function;
   drawImage: Function;
   allFiles: null | FileList | File[];
+  activeImage: null | IFile,
   isUl?: boolean;
 }
 
-function FilesViewer({ drawImage, isUl, files, onBack, onOpen, size, play, pause, isPlaying, setIsPlaying, allFiles }: FVProps): JSX.Element {
+function FilesViewer({ drawImage, isUl, files, onBack, onOpen, size, play, pause, isPlaying, setIsPlaying, allFiles, activeImage }: FVProps): JSX.Element {
   const style = {
     width: size ? size : '100%',
     borderRight: size ? "1px solid white" : "none",
@@ -47,12 +48,12 @@ function FilesViewer({ drawImage, isUl, files, onBack, onOpen, size, play, pause
         )}
         {files.map(({ name, directory, size, mimeType, fullPath } : IFile, index: number) => (
           <tr key={`${name}-${index}-${crypto.randomUUID()}`} className="clickable position-relative" onClick={() => handleClick({ name, directory, size, mimeType, fullPath })}>
-            <td className={`icon-row p-1 ${isPlaying?.name === name ? "playing" : ""}`}>
+            <td className={`icon-row p-1 ${(isPlaying?.name === name || activeImage?.name === name) ? "playing" : ""}`}>
               {directory ? <IconFolder /> : getIcon(name.split(".")[1])}
             </td>
-            <td className={isPlaying?.name === name ? "playing" : ""} title={name}>{ truncate(name, 15) }</td>
-            <td style={{ minWidth: '60px' }} className={`p-0 ${isPlaying?.name === name ? "playing" : ""}`}><span className="float-end" style={{ fontSize: '0.75rem' }}>{ size }</span></td>
-            <td className={`position-absolute mimetype p-0 ${isPlaying?.name === name ? "playing" : ""}`}>{ mimeType ? mimeType : <span style={{ color: 'yellow' }}>unknown</span> }</td>
+            <td className={(isPlaying?.name === name || activeImage?.name === name) ? "playing" : ""} title={name}>{ truncate(name, 15) }</td>
+            <td style={{ minWidth: '60px' }} className={`p-0 ${(isPlaying?.name === name || activeImage?.name === name) ? "playing" : ""}`}><span className="float-end" style={{ fontSize: '0.75rem' }}>{ size }</span></td>
+            <td className={`position-absolute mimetype p-0 ${(isPlaying?.name === name || activeImage?.name === name) ? "playing" : ""}`}>{ mimeType ? mimeType : <span style={{ color: 'yellow' }}>unknown</span> }</td>
           </tr>
         ))}
         <tr className="clickable">

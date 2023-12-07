@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FFT_SIZE, FileType as AcceptedFileType, circleVisualiser, getFiles, getMediaByType, getMediaInDir, getBase64Image, filter } from "../utils";
+import { FFT_SIZE, FileType as AcceptedFileType, circleVisualiser, getFiles, getMediaByType, getBase64Image, filter, isFileOfType } from "../utils";
 import { IFile } from "../utils";
 import { Animation, AudioPlayer, FilesViewer } from "../components";
 import { DocumentIcon, ImageIcon, MediaIcon, Mp3Icon, Mp4Icon, SrcCodeIcon } from "../components/Icons";
@@ -20,11 +20,13 @@ function Main(): JSX.Element {
   const [volume, setVolume] = useState<number>(0.5);
   const [elapsed, setElapsed] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(() => true);
-  
+  const [currentFileType, setCurrentFileType] = useState<null | AcceptedFileType | "directory" | "*" | 'all'>(null);
+  const [showImgControls, setShowImgControls] = useState<boolean>(() => false);
+  const [activeImage, setActiveImage] = useState<null | IFile>(null);
+
   const [path, setPath] = useState<string>("");
   const [handling, setHandling] = useState<null | 'fs' | 'ul'>(() => null);
   const files : IFile[] = useMemo(() => path ? getFiles(path) : [], [path]);
-  // const [allmedia, setallmedia] = useState<null | IFile[]>(null);
   const [mediaFiles, setMediaFiles] = useState<IFile[]>(() => files);
   const [mode, setMode] = useState<"filter" | 'media'>('filter')
   const switchMode = () => setMode((pm) => pm === 'filter' ? 'media' : 'filter');
@@ -38,9 +40,11 @@ function Main(): JSX.Element {
 
   useEffect(() => {
     if (files.length !== mediaFiles.length) setMediaFiles(() => files);
+    // eslint-disable-next-line
   }, [files]);
 
   const getFileOfType = (type: AcceptedFileType | "directory" | "*" | 'all') => {
+    setCurrentFileType(() => type);
     if (type === 'audio' || type === 'video' || type === 'image' || type === 'document' || type === 'code')
       setMediaFiles(() => files.filter((s: IFile) : boolean => !!s.mimeType?.includes(type)))
     if (type === 'directory')
@@ -70,17 +74,16 @@ function Main(): JSX.Element {
     }
     const timeoutId = setInterval(trackTime, 250);
     return () => { clearInterval(timeoutId); }
+    // eslint-disable-next-line
   }, [audio, audio.current, audio?.current?.currentTime]);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) : void => {
     // @ts-ignore
     const path = pathModule.join(e.target.files[0].path, '..');
     if (path && e.target.files) {
-      const files = Array.from(e.target.files);
       setPath(() => path);
       setHandling(() => 'ul');
       setAllFiles(() => getMediaByType(e.target.files, "audio"));
-      // setallmedia(() => getMediaInDir(path, files, 'audio'))
     }
   }
 
@@ -116,13 +119,11 @@ function Main(): JSX.Element {
   }
 
   const drawImage = (src: string, mimeType: string) => {
+    const activeImageIndex = mediaFiles.map(mf => mf.fullPath).indexOf(src);
     const img : HTMLImageElement | null = document.getElementById('display-image') as HTMLImageElement;
-    // const cel : HTMLCanvasElement | null = document.getElementById('canvas') as HTMLCanvasElement;
-    // const { width, height } = cel;
-    // img.width = "auto";
-    // img.height = "auto";
+    setShowImgControls(() => true);
+    setActiveImage(() => mediaFiles[activeImageIndex]);
     const data = `data:${mimeType};base64,${getBase64Image(src)}`
-    // cel.style.filter = 'none';
     img.src = data;
   }
 
@@ -157,6 +158,16 @@ function Main(): JSX.Element {
       play(files[itemIndex + value].name);
       setIsPlaying(files[itemIndex + value]);
     }
+  }
+
+  const changeImage = (name: string, value: -1 | 1) : undefined | void => {
+    const fmap = mediaFiles.map(f => f.name);
+    const itemIndex = fmap.indexOf(name);
+    const actualNewIndex = value < 1 && itemIndex === 0 ? mediaFiles.length - 1 :
+      value > 1 && itemIndex === mediaFiles.length - 1 ? 0 : itemIndex + value;
+    const item = mediaFiles[actualNewIndex];
+    if (!isFileOfType(item, 'image')) return;
+    drawImage(mediaFiles[actualNewIndex].fullPath, mediaFiles[actualNewIndex].mimeType as string);
   }
 
   return (
@@ -204,7 +215,7 @@ function Main(): JSX.Element {
               </div>
             </div>
           ) : handling === 'fs' ? (
-            <FilesViewer drawImage={drawImage} setIsPlaying={setIsPlaying} isPlaying={isPlaying} pause={handlePausing} play={play} allFiles={allFiles} files={mode === 'filter' ? filteredFiles : mediaFiles} onOpen={onOpen} onBack={onBack} size="300px" />
+            <FilesViewer activeImage={activeImage} drawImage={drawImage} setIsPlaying={setIsPlaying} isPlaying={isPlaying} pause={handlePausing} play={play} allFiles={allFiles} files={mode === 'filter' ? filteredFiles : mediaFiles} onOpen={onOpen} onBack={onBack} size="300px" />
           ) : (
             <>
               <div>
@@ -212,13 +223,13 @@ function Main(): JSX.Element {
                 <input directory="" webkitdirectory="" onChange={handleUpload} multiple accept="directory" style={{ visibility: 'hidden', display: 'none' }} type="file" name="file2" id="file2" />
                 <label style={{ border: "1px solid white", borderRadius: "0.5rem" }} className="d-block btn button-primary text-white" htmlFor="file2">Change directory</label>
               </div>
-              <FilesViewer drawImage={drawImage} isUl setIsPlaying={setIsPlaying} isPlaying={isPlaying} pause={handlePausing} play={play} allFiles={allFiles} files={mediaFiles} onOpen={onOpen} onBack={onBack} size="300px" />
+              <FilesViewer activeImage={activeImage} drawImage={drawImage} isUl setIsPlaying={setIsPlaying} isPlaying={isPlaying} pause={handlePausing} play={play} allFiles={allFiles} files={mediaFiles} onOpen={onOpen} onBack={onBack} size="300px" />
             </>
           )}
         </div>
       </div>
       <div style={{ flex: 1 }} className="controlholder">
-        <Animation barHeight={barHeight} bufferLength={bufferLength} animation={circleVisualiser} analyser={analyser} x={x} dataArray={musicData} />
+        <Animation activeImage={activeImage} changeImage={changeImage} showImgControls={showImgControls} currentFileType={currentFileType} barHeight={barHeight} bufferLength={bufferLength} animation={circleVisualiser} analyser={analyser} x={x} dataArray={musicData} />
         <AudioPlayer volume={volume} changeVolume={changeVolume} goTo={goTo} setDuration={setDuration} isPaused={isPaused} setElapsed={setElapsed} elapsed={elapsed} duration={duration} changeSong={changeSong} isPlaying={isPlaying} files={mediaFiles} stop={stop} wind={wind} play={play} pause={handlePausing} ref={audio}></AudioPlayer>
       </div>
     </div>

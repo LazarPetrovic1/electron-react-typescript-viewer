@@ -1,8 +1,8 @@
 const { screen, app, BrowserWindow } = require('electron');
 const remoteMain = require('@electron/remote/main');
 const isDev = require('electron-is-dev');
-
-remoteMain.initialize()
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+remoteMain.initialize();
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   const win = new BrowserWindow({
@@ -10,7 +10,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      webSecurity: false
+      webSecurity: false,
     }
   });
   remoteMain.enable(win.webContents);
