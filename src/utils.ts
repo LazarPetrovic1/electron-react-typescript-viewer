@@ -158,6 +158,11 @@ export function isFileOfType(file: File | IFile, type: string) : boolean {
 
 export const padNum = (x: number) : string => x < 10 ? `0${x}` : x.toString();
 export const formatTrackTime = (duration: number) : string => duration < 60 ? `0:${padNum(duration)}` : `${Math.floor(duration / 60)}:${padNum(duration % 60)}`;
+export const getAllFilesOfType = (files: IFile[], type: FileType | "directory" | "*" | "all") : IFile[] => {
+  if (type === 'directory') return files.filter((s: IFile) : boolean => s.directory);
+  if (type === '*' || type === 'all') return files;
+  return files.filter((s: IFile) : boolean => !!s.mimeType?.includes(type));
+}
 
 export const getBase64Image = (path: string) => fs.readFileSync(path, { encoding: 'base64', flag: 'r' });
 export const barWidth = 1;

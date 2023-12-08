@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FFT_SIZE, FileType as AcceptedFileType, circleVisualiser, getFiles, getMediaByType, getBase64Image, filter, isFileOfType } from "../utils";
+import { FFT_SIZE, FileType as AcceptedFileType, circleVisualiser, getFiles, getMediaByType, getBase64Image, filter, isFileOfType, getAllFilesOfType } from "../utils";
 import { IFile } from "../utils";
 import { Animation, AudioPlayer, FilesViewer } from "../components";
 import { DocumentIcon, ImageIcon, MediaIcon, Mp3Icon, Mp4Icon, SrcCodeIcon } from "../components/Icons";
@@ -20,7 +20,7 @@ function Main(): JSX.Element {
   const [volume, setVolume] = useState<number>(0.5);
   const [elapsed, setElapsed] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(() => true);
-  const [currentFileType, setCurrentFileType] = useState<null | AcceptedFileType | "directory" | "*" | 'all'>(null);
+  const [currentFileType, setCurrentFileType] = useState<AcceptedFileType | "directory" | "*" | 'all'>("*");
   const [showImgControls, setShowImgControls] = useState<boolean>(() => false);
   const [activeImage, setActiveImage] = useState<null | IFile>(null);
 
@@ -43,20 +43,31 @@ function Main(): JSX.Element {
     // eslint-disable-next-line
   }, [files]);
 
-  const getFileOfType = (type: AcceptedFileType | "directory" | "*" | 'all') => {
+  const getFileOfType = (type: AcceptedFileType | "directory" | "*" | 'all') : void | IFile[] => {
     setCurrentFileType(() => type);
-    if (type === 'audio' || type === 'video' || type === 'image' || type === 'document' || type === 'code')
+    let newFiles : IFile[] = [];
+    if (type === 'audio' || type === 'video' || type === 'image' || type === 'document' || type === 'code') {
+      newFiles = files.filter((s: IFile) : boolean => !!s.mimeType?.includes(type))
       setMediaFiles(() => files.filter((s: IFile) : boolean => !!s.mimeType?.includes(type)))
-    if (type === 'directory')
+    }
+    if (type === 'directory') {
+      newFiles = files.filter((s: IFile) : boolean => s.directory);
       setMediaFiles(() => files.filter((s: IFile) : boolean => s.directory))
-    if (type === '*' || type === 'all') setMediaFiles(() => files);
+    }
+    if (type === '*' || type === 'all') {
+      newFiles = files;
+      setMediaFiles(() => files);
+    }
+    return newFiles;
   }
 
   const searchFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setSearchString(() => value);
+    const actualFiles = getAllFilesOfType(files, currentFileType) as IFile[];
+    if (value.length < 1) setMediaFiles(() => actualFiles);
     setMediaFiles((pmf) => pmf.filter((pf: IFile) : boolean => (
-      !!pf.name.toLowerCase().includes(value)
+      !!pf.name.toLowerCase().includes(value.toLowerCase())
     )))
   }
 
