@@ -17,9 +17,6 @@ function Nav() {
               <Link className="nav-link" to="/">Music</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link active" aria-current="page" to="/files">Filesystem</Link>
-            </li>
-            <li className="nav-item">
               <Link className="nav-link" to="/about">About</Link>
             </li>
           </ul>

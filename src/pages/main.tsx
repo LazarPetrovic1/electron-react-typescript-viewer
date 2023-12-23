@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FFT_SIZE, FileType as AcceptedFileType, circleVisualiser, getFiles, getMediaByType, getBase64Image, filter, isFileOfType, getAllFilesOfType } from "../utils";
 import { IFile } from "../utils";
 import { Animation, AudioPlayer, FilesViewer } from "../components";
-import { DocumentIcon, ImageIcon, MediaIcon, Mp3Icon, Mp4Icon, SrcCodeIcon } from "../components/Icons";
+import { DocumentIcon, IconFolder, ImageIcon, MediaIcon, Mp3Icon, Mp4Icon, SrcCodeIcon } from "../components/Icons";
 
 let audioSource : MediaElementAudioSourceNode;
 let analyser : AnalyserNode;
@@ -25,7 +25,6 @@ function Main(): JSX.Element {
   const [activeImage, setActiveImage] = useState<null | IFile>(null);
 
   const [path, setPath] = useState<string>("");
-  const [handling, setHandling] = useState<null | 'fs' | 'ul'>(() => null);
   const files : IFile[] = useMemo(() => path ? getFiles(path) : [], [path]);
   const [mediaFiles, setMediaFiles] = useState<IFile[]>(() => files);
   const [mode, setMode] = useState<"filter" | 'media'>('filter')
@@ -93,7 +92,6 @@ function Main(): JSX.Element {
     const path = pathModule.join(e.target.files[0].path, '..');
     if (path && e.target.files) {
       setPath(() => path);
-      setHandling(() => 'ul');
       setAllFiles(() => getMediaByType(e.target.files, "audio"));
     }
   }
@@ -195,38 +193,28 @@ function Main(): JSX.Element {
                 className="form-control form-control-sm"
                 placeholder="File search"
               />
-              {handling === 'fs' && (
-                <button title="Show media files" className="btn btn-primary" onClick={switchMode}>
-                  <MediaIcon />
-                </button>
-              )}
             </div>
-            {handling === 'ul' && (
-              <div className="d-flex justify-content-between">
-                {/* <button onClick={() => getFileOfType("directory")} className="btn btn-primary" title="List directories"><IconFolder/></button> */}
-                <button onClick={() => getFileOfType("document")} className="btn btn-primary" title="List documents"><DocumentIcon/></button>
-                <button onClick={() => getFileOfType("image")} className="btn btn-primary" title="List images"><ImageIcon/></button>
-                <button onClick={() => getFileOfType("video")} className="btn btn-primary" title="List videos"><Mp4Icon/></button>
-                <button onClick={() => getFileOfType("audio")} className="btn btn-primary" title="List audio files"><Mp3Icon/></button>
-                <button onClick={() => getFileOfType("code")} className="btn btn-primary" title="List audio files"><SrcCodeIcon/></button>
-                <button onClick={() => getFileOfType("*")} className="btn btn-primary texthandler" title="Get everything">*</button>
-              </div>
-            )}
+            <div className="d-flex justify-content-between mwside">
+              <button onClick={() => getFileOfType("directory")} className={`btn btn-${currentFileType === "directory" ? "secondary" : "primary"} px-2 py-1`} title="List directories"><IconFolder/></button>
+              <button onClick={() => getFileOfType("document")} className={`btn btn-${currentFileType === "document" ? "secondary" : "primary"} px-2 py-1`} title="List documents"><DocumentIcon/></button>
+              <button onClick={() => getFileOfType("image")} className={`btn btn-${currentFileType === "image" ? "secondary" : "primary"} px-2 py-1`} title="List images"><ImageIcon/></button>
+              <button onClick={() => getFileOfType("video")} className={`btn btn-${currentFileType === "video" ? "secondary" : "primary"} px-2 py-1`} title="List videos"><Mp4Icon/></button>
+              <button onClick={() => getFileOfType("audio")} className={`btn btn-${currentFileType === "audio" ? "secondary" : "primary"} px-2 py-1`} title="List audio files"><Mp3Icon/></button>
+              <button onClick={() => getFileOfType("code")} className={`btn btn-${currentFileType === "code" ? "secondary" : "primary"} px-2 py-1`} title="List source code files"><SrcCodeIcon/></button>
+              <button onClick={() => getFileOfType("*")} className="btn btn-primary texthandler px-2" title="Get everything">*</button>
+            </div>
           </>
         )}
         <div style={{ overflowY: 'auto', overflowX: 'hidden', width: '300px', borderRight: '1px solid white', height: 'calc(100% - 76px)' }}>
-          {!handling ? (
+          {files.length <= 0 ? (
             <div>
-              <h5 className="text-center">Would you like to upload a folder or use the filesystem navigation?</h5>
-              <div className="d-flex justify-content-between">
-                <button onClick={() => setHandling('fs')} style={{ border: "1px solid white", borderRadius: "0.5rem" }} className="btn button-primary text-white">Filesystem</button>
+              <h5 className="text-center my-2">Upload a directory. You can then browse the files, view images and play music.</h5>
+              <div className="d-flex justify-content-center">
                 {/* @ts-ignore */}
                 <input directory="" webkitdirectory="" onChange={handleUpload} multiple accept="directory" style={{ visibility: 'hidden', display: 'none' }} type="file" name="file" id="file" />
                 <label style={{ border: "1px solid white", borderRadius: "0.5rem" }} className="btn text-white" htmlFor="file">Upload</label>
               </div>
             </div>
-          ) : handling === 'fs' ? (
-            <FilesViewer activeImage={activeImage} drawImage={drawImage} setIsPlaying={setIsPlaying} isPlaying={isPlaying} pause={handlePausing} play={play} allFiles={allFiles} files={mode === 'filter' ? filteredFiles : mediaFiles} onOpen={onOpen} onBack={onBack} size="300px" />
           ) : (
             <>
               <div>

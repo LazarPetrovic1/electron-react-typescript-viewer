@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Files, Main } from "./pages";
+import { Files, Main, About } from "./pages";
 import { Nav } from "./components";
 type Wrappers = { children?: React.ReactNode }
 const Wrapper = (props: Wrappers) => (
@@ -14,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Main />}></Route>
           <Route path="/files" element={<Files />}></Route>
+          <Route path="/about" element={<About />}></Route>
         </Routes>
       </Wrapper>
     </BrowserRouter>    
